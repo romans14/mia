@@ -40,7 +40,8 @@ numA = input('Numero di valori di α_{max} da generare: ');
 if isempty(amin) || isempty(amax) || isempty(numA) || numA < 1
     error('Intervallo di α_{max} non valido.');
 end
-alphaMaxVec = linspace(amin, amax, numA);
+alphaMaxVec = unique([linspace(amin, amax, numA), 0]);
+alphaMaxVec = sort(alphaMaxVec);
 
 kmin = input('Valore minimo di κ_{max}: ');
 kmax = input('Valore massimo di κ_{max}: ');
@@ -48,7 +49,8 @@ numK = input('Numero di valori di κ_{max} da generare: ');
 if isempty(kmin) || isempty(kmax) || isempty(numK) || numK < 1
     error('Intervallo di κ_{max} non valido.');
 end
-kappaMaxVec = linspace(kmin, kmax, numK);
+kappaMaxVec = unique([linspace(kmin, kmax, numK), 0]);
+kappaMaxVec = sort(kappaMaxVec);
 
 %% 5) Calcolo e plot delle ellissi per tutte le combinazioni alpha-kappa
 numA = numel(alphaMaxVec);
