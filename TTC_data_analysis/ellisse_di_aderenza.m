@@ -36,20 +36,18 @@ gamma = deg2rad(camDeg);
 %% 4) Definizione dei range di slip massimi
 amin = input('Valore minimo di α_{max} [deg]: ');
 amax = input('Valore massimo di α_{max} [deg]: ');
-numA = input('Numero di valori di α_{max} da generare: ');
-if isempty(amin) || isempty(amax) || isempty(numA) || numA < 1
+if isempty(amin) || isempty(amax) || amin > amax
     error('Intervallo di α_{max} non valido.');
 end
-alphaMaxVec = unique([linspace(amin, amax, numA), 0]);
+alphaMaxVec = unique([amin:1:amax, 0]);
 alphaMaxVec = sort(alphaMaxVec);
 
 kmin = input('Valore minimo di κ_{max}: ');
 kmax = input('Valore massimo di κ_{max}: ');
-numK = input('Numero di valori di κ_{max} da generare: ');
-if isempty(kmin) || isempty(kmax) || isempty(numK) || numK < 1
+if isempty(kmin) || isempty(kmax) || kmin > kmax
     error('Intervallo di κ_{max} non valido.');
 end
-kappaMaxVec = unique([linspace(kmin, kmax, numK), 0]);
+kappaMaxVec = unique([kmin:0.1:kmax, 0]);
 kappaMaxVec = sort(kappaMaxVec);
 
 %% 5) Calcolo e plot delle ellissi per tutte le combinazioni alpha-kappa
