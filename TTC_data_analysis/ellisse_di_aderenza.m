@@ -80,11 +80,11 @@ for iA = 1:numA
         Fy_bnd = [Fy1, Fy2, Fy3, Fy4];
 
         count = count + 1;
-        plot(Fx_bnd, Fy_bnd, '-', 'Color', colors(count,:), 'LineWidth', 2);
+        plot(Fy_bnd, Fx_bnd, '-', 'Color', colors(count,:), 'LineWidth', 2);
         legEntries{count} = sprintf('α_{max}=%.1f°, κ_{max}=%.2f', aMax, kMax);
     end
 end
-xlabel('F_x [N]'); ylabel('F_y [N]');
+xlabel('F_y [N]'); ylabel('F_x [N]');
 title(sprintf('Ellissi di aderenza PAC2002 a Fz=%.0fN, P=%.0fPa, cam=%.1f°', Fz, P, camDeg));
 legend(legEntries, 'Location', 'Best');
 hold off;
