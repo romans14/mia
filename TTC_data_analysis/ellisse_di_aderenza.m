@@ -50,24 +50,37 @@ legEntries = cell(numA * numK,1);
 count = 0;
 for iA = 1:numA
     aMax = alphaMaxVec(iA);
+    aRad = deg2rad(aMax);
     alpha_vec = deg2rad(linspace(-aMax, aMax, 200));
     for jK = 1:numK
         kMax = kappaMaxVec(jK);
         kappa_vec = linspace(-kMax, kMax, 200);
-        [Agrid,Kgrid] = meshgrid(alpha_vec, kappa_vec);
-        Fx_grid = MF_PAC2002_Fx_pure(Kgrid, 0, Fz, gamma, P, p) .* ...
-                  MF_PAC2002_Gx(Kgrid, Agrid, Fz, gamma, P, p);
-        Fy_grid = MF_PAC2002_Fy_pure(0, Agrid, Fz, gamma, P, p) .* ...
-                  MF_PAC2002_Gy(Kgrid, Agrid, Fz, gamma, P, p);
-        pts = unique([Fx_grid(:), Fy_grid(:)], 'rows');
-        if size(pts,1) >= 3
-            k_hull = convhull(pts(:,1), pts(:,2));
-            hullPts = pts(k_hull, :);
-        else
-            hullPts = pts;
-        end
+
+        % bordo con kappa = -kMax
+        Kfix = -kMax * ones(size(alpha_vec));
+        Fx1 = MF_PAC2002_Fx_pure(Kfix, 0, Fz, gamma, P, p) .* MF_PAC2002_Gx(Kfix, alpha_vec, Fz, gamma, P, p);
+        Fy1 = MF_PAC2002_Fy_pure(0, alpha_vec, Fz, gamma, P, p) .* MF_PAC2002_Gy(Kfix, alpha_vec, Fz, gamma, P, p);
+
+        % bordo con alpha = aMax
+        Afix = aRad * ones(size(kappa_vec));
+        Fx2 = MF_PAC2002_Fx_pure(kappa_vec, 0, Fz, gamma, P, p) .* MF_PAC2002_Gx(kappa_vec, Afix, Fz, gamma, P, p);
+        Fy2 = MF_PAC2002_Fy_pure(0, Afix, Fz, gamma, P, p) .* MF_PAC2002_Gy(kappa_vec, Afix, Fz, gamma, P, p);
+
+        % bordo con kappa = kMax
+        Kfix = kMax * ones(size(alpha_vec));
+        Fx3 = MF_PAC2002_Fx_pure(Kfix, 0, Fz, gamma, P, p) .* MF_PAC2002_Gx(Kfix, fliplr(alpha_vec), Fz, gamma, P, p);
+        Fy3 = MF_PAC2002_Fy_pure(0, fliplr(alpha_vec), Fz, gamma, P, p) .* MF_PAC2002_Gy(Kfix, fliplr(alpha_vec), Fz, gamma, P, p);
+
+        % bordo con alpha = -aMax
+        Afix = -aRad * ones(size(kappa_vec));
+        Fx4 = MF_PAC2002_Fx_pure(fliplr(kappa_vec), 0, Fz, gamma, P, p) .* MF_PAC2002_Gx(fliplr(kappa_vec), Afix, Fz, gamma, P, p);
+        Fy4 = MF_PAC2002_Fy_pure(0, Afix, Fz, gamma, P, p) .* MF_PAC2002_Gy(fliplr(kappa_vec), Afix, Fz, gamma, P, p);
+
+        Fx_bnd = [Fx1, Fx2, Fx3, Fx4];
+        Fy_bnd = [Fy1, Fy2, Fy3, Fy4];
+
         count = count + 1;
-        plot(hullPts(:,1), hullPts(:,2), '-', 'Color', colors(count,:), 'LineWidth', 2);
+        plot(Fx_bnd, Fy_bnd, '-', 'Color', colors(count,:), 'LineWidth', 2);
         legEntries{count} = sprintf('α_{max}=%.1f°, κ_{max}=%.2f', aMax, kMax);
     end
 end
