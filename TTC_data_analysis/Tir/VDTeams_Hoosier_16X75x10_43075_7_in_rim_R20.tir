@@ -1,0 +1,252 @@
+$--------------------------------------------------------------------mdi_header
+[MDI_HEADER]
+FILE_TYPE                ='tir'
+FILE_VERSION             =3
+FILE_FORMAT              ='ASCII'
+$-------------------------------------------------------------------------units
+[UNITS]
+LENGTH                     = 'meter'             
+FORCE                      = 'newton'            
+ANGLE                      = 'radian'            
+MASS                       = 'kg'                
+TIME                       = 'second'            
+PRESSURE                   = 'pascal'            
+$-------------------------------------------------------------------------model
+[MODEL]
+PROPERTY_FILE_FORMAT       = 'PAC2002'            $Tire property type
+USE_MODE                   = 14.000000            $Tire use switch (IUSED)
+LONGVL                     = 11.164947            $Measurement speed
+VXLOW                      = 1.000000             $Below this speed forces are scaled down
+TYRESIDE                   = 'RIGHT'              $Mounted side of tire at vehicle/test bench
+BELT_DYNAMICS              = 'NO'                 $For switching on belt dynamics
+CONTACT_MODEL              = 'DEFAULT'            $Defines type of contact with the road
+FE_METHOD                  = 'NO'                 $For switching to Friction ellipse for combined slip
+LOCAL_SOLVER               = 'NO'                 $For using the local tire solver (default setting)
+LOCAL_SOLVER_HP            = 'YES'                $For using the local tire solver (HP  setting)
+FITTYP			   = 61
+$---------------------------------------------------------------tire_conditions
+[TIRE_CONDITIONS]
+IP                         = 82939.341560         $Inflation Pressure
+IP_NOM                     = 82939.341560         $Nominal Inflation Pressure
+$---------------------------------------------------------------------dimension
+[DIMENSION]
+UNLOADED_RADIUS            = 0.203200             $Free tire radius
+WIDTH                      = 0.190500             $Nominal section width of the tire
+ASPECT_RATIO               = 0.400000             $Nominal aspect ratio
+RIM_RADIUS                 = 0.127000             $Radius of the rim
+RIM_WIDTH                  = 0.177800             $Width of the rim
+BOTTOMING_RADIUS           = 0.127000             $Radius at which the rim hits the road
+$----------------------------------------------------------------------vertical
+[VERTICAL]
+VERTICAL_STIFFNESS         = 106991.235201        $Tire vertical stiffness
+VERTICAL_DAMPING           = 500.000000           $Tire vertical damping
+DREFF                      = 0.328494             $Peak value of e.r.r.
+BREFF                      = 3.784477             $Low load stiffness e.r.r.
+FREFF                      = 0.083311             $High load stiffness e.r.r.
+FNOMIN                     = 664.399725           $Nominal wheel load
+DYNAMIC_STIFFNESS          = 0.000000             $Dynamic stiffness rate
+DYNAMIC_DAMPING            = 0.000000             $Dynamic damping
+$---------------------------------------------------------------long_slip_range
+[LONG_SLIP_RANGE]
+KPUMIN                     = -0.372100            $Minimum valid wheel slip
+KPUMAX                     = 0.217900             $Maximum valid wheel slip
+$--------------------------------------------------------------slip_angle_range
+[SLIP_ANGLE_RANGE]
+ALPMIN                     = -0.217398            $Minimum valid slip angle
+ALPMAX                     = 0.216735             $Maximum valid slip angle
+$-------------------------------------------------------inclination_angle_range
+[INCLINATION_ANGLE_RANGE]
+CAMMIN                     = -0.001204            $Minimum valid camber angle
+CAMMAX                     = 0.070250             $Maximum valid camber angle
+$----------------------------------------------------------vertical_force_range
+[VERTICAL_FORCE_RANGE]
+FZMIN                      = -32.490000           $Minimum allowed wheel load
+FZMAX                      = 1264.220000          $Maximum allowed wheel load
+$----------------------------------------------------------scaling_coefficients
+[SCALING_COEFFICIENTS]
+LFZO                       = 1.000000             
+LCX                        = 1.000000             
+LEX                        = 1.000000             
+LKX                        = 1.000000             
+LHX                        = 1.000000             
+LVX                        = 1.000000             
+LMUX                       = 1.000000             
+LGAX                       = 1.000000             
+LCY                        = 1.000000             
+LEY                        = 1.000000             
+LKY                        = 1.000000             
+LHY                        = 1.000000             
+LVY                        = 1.000000             
+LMUY                       = 1.000000             
+LGAY                       = 1.000000             
+LKG                        = 1.000000             
+LTR                        = 1.000000             
+LRES                       = 1.000000             
+LGAZ                       = 1.000000             
+LXAL                       = 1.000000             
+LYKA                       = 1.000000             
+LVYKA                      = 1.000000             
+LS                         = 1.000000             
+LMX                        = 1.000000             
+LMY                        = 1.000000             
+LVMX                       = 1.000000             
+LSGKP                      = 1.000000             
+LSGAL                      = 1.000000             
+LGYR                       = 1.000000             
+LCZ                        = 1.000000             
+LIP                        = 1.000000             
+$-----------------------------------------------------longitudinal_coefficients
+[LONGITUDINAL_COEFFICIENTS]
+PCX1                       = 1.188835             
+PDX1                       = 2.202631             
+PDX2                       = -0.092233            
+PDX3                       = 6.290880             
+PEX1                       = -1.245128            
+PEX2                       = -0.797078            
+PEX3                       = 3.168656             
+PEX4                       = 0.027401             
+PKX1                       = 38.722281            
+PKX2                       = -27.935309           
+PKX3                       = 0.266302             
+PHX1                       = -0.000323            
+PHX2                       = 0.001790             
+PVX1                       = 0.004270             
+PVX2                       = -0.025300            
+PPX1                       = -0.859471            
+PPX2                       = -1.272472            
+PPX3                       = -0.338101            
+PPX4                       = -0.381567            
+RBX1                       = 108.008356           
+RBX2                       = 53.929622            
+RCX1                       = 0.943311             
+RHX1                       = 0.000000             
+REX1                       = -0.261098            
+REX2                       = -0.520356            
+PTX1                       = 0.010000             
+PTX2                       = 0.000000             
+PTX3                       = 0.000000             
+PTX4                       = 0.000000             
+$------------------------------------------------------overturning_coefficients
+[OVERTURNING_COEFFICIENTS]
+QSX1                       = 0.000000             
+QSX2                       = 5.408410             
+QSX3                       = 0.051389             
+QSX4                       = -0.008706            
+QSX5                       = -0.000001            
+QSX6                       = 3.714962             
+QSX7                       = -9.146017            
+QSX8                       = -582.218539          
+QSX9                       = 0.013750             
+QSX10                      = 3.734419             
+QSX11                      = 1.178636             
+QPX1                       = 0.101911             
+$----------------------------------------------------------lateral_coefficients
+[LATERAL_COEFFICIENTS]
+PCY1                       = 2.105303             
+PDY1                       = 2.441139             
+PDY2                       = -0.140045            
+PDY3                       = 9.918189             
+PEY1                       = 3.660832             
+PEY2                       = -1.853261            
+PEY3                       = 0.000000             
+PEY4                       = 2.081747             
+PKY1                       = -54.109852           
+PKY2                       = 2.214689             
+PKY3                       = 1.306857             
+PHY1                       = 0.000000             
+PHY2                       = 0.000000             
+PHY3                       = 0.101999             
+PVY1                       = 0.000000             
+PVY2                       = 0.000000             
+PVY3                       = -0.646671            
+PVY4                       = -0.401320            
+PPY1                       = 0.467998             
+PPY2                       = 1.594421             
+PPY3                       = -0.230130            
+PPY4                       = 0.101596             
+RBY1                       = 0.000000             
+RBY2                       = 0.000000             
+RBY3                       = 0.000000             
+RCY1                       = 0.000000             
+RHY1                       = 0.000000             
+RVY1                       = 0.000000             
+RVY2                       = 0.000000             
+RVY3                       = 0.000000             
+RVY4                       = 0.000000             
+RVY5                       = 0.000000             
+RVY6                       = 0.000000             
+REY1                       = 0.000000             
+REY2                       = 0.000000             
+RHY2                       = 0.000000             
+PTY1                       = 1.652982             
+PTY2                       = 1.623304             
+PTY3                       = 0.000000             
+$----------------------------------------------------------rolling_coefficients
+[ROLLING_COEFFICIENTS]
+QSY1                       = 0.000000             
+QSY2                       = 0.000000             
+QSY3                       = 0.000000             
+QSY4                       = 0.000000             
+QSY5                       = 0.000000             
+QSY6                       = 0.000000             
+QSY7                       = 1.000000             
+QSY8                       = 1.000000             
+$---------------------------------------------------------aligning_coefficients
+[ALIGNING_COEFFICIENTS]
+QBZ1                       = 7.310847             
+QBZ2                       = -0.681359            
+QBZ3                       = -1.074896            
+QBZ4                       = 0.000000             
+QBZ5                       = 2.132123             
+QBZ9                       = 10.196391            
+QBZ10                      = 0.402802             
+QCZ1                       = 1.946623             
+QDZ1                       = 0.141942             
+QDZ2                       = -0.016156            
+QDZ3                       = 0.000000             
+QDZ4                       = -11.902936           
+QDZ6                       = 0.000000             
+QDZ7                       = 0.000000             
+QDZ8                       = -4.902933            
+QDZ9                       = 2.459577             
+QEZ1                       = 0.945801             
+QEZ2                       = 0.170985             
+QEZ3                       = 0.815415             
+QEZ4                       = 0.000000             
+QEZ5                       = 3.794850             
+QHZ1                       = 0.000000             
+QHZ2                       = 0.000000             
+QHZ3                       = -0.629572            
+QHZ4                       = 0.356190             
+QPZ1                       = 1.470835             
+QPZ2                       = -0.259446            
+SSZ1                       = 0.000000             
+SSZ2                       = 0.000000             
+SSZ3                       = 0.000000             
+SSZ4                       = 0.000000             
+QTZ1                       = 0.000000             
+MBELT                      = 0.000000             
+$---------------------------------------------------------turnslip_coefficients
+[TURNSLIP_COEFFICIENTS]
+PECP1                      = 0.000000             
+PECP2                      = 0.000000             
+PDXP1                      = 0.000000             
+PDXP2                      = 0.000000             
+PDXP3                      = 0.000000             
+PDYP1                      = 0.000000             
+PDYP2                      = 0.000000             
+PDYP3                      = 0.000000             
+PDYP4                      = 0.000000             
+PKYP1                      = 0.000000             
+PHYP1                      = 0.000000             
+PHYP2                      = 0.000000             
+PHYP3                      = 0.000000             
+PHYP4                      = 0.000000             
+QDTP1                      = 0.000000             
+QBRP1                      = 0.000000             
+QCRP1                      = 0.000000             
+QCRP2                      = 0.000000             
+QDRP1                      = 0.000000             
+QDRP2                      = 0.000000             
+
+
