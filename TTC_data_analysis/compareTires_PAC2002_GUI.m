@@ -217,9 +217,9 @@ function Fx = MF_PAC2002_Fx_pure(kappa,~,Fz,userGamma,p)
     B = K/(C*D + eps); 
     SH = Hx1 + Hx2*dfz;
     k = kappa + SH;
-    E = (Ex1 + Ex2*dfz + Ex3*dfz^2) * (1 - Ex4*sign(k)); 
-    SV = Fz * (Vx1 + Vx2*dfz);  
-    Fx0 = D*sin(C*atan(B*k - E*(B*k - atan(B*k)))); 
+    E  = (Ex1 + Ex2*dfz + Ex3*dfz^2) .* (1 - Ex4*sign(k));
+    SV = Fz * (Vx1 + Vx2*dfz);
+    Fx0 = D.*sin(C*atan(B*k - E.*(B*k - atan(B*k))));
     Fx = Fx0 + SV;
 end
 
@@ -246,9 +246,9 @@ function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,userGamma,p)
     B = K/(C*D + eps);
     SH = (Hy1 + Hy2*dfz) + Hy3 * userGamma;
     a = alpha + SH;
-    E = (Ey1 + Ey2*dfz) * (1 - (Ey3 + Ey4*userGamma)*sign(a)); 
-    SV = Fz * (Vy1 + Vy2*dfz + (Vy3 + Vy4*dfz)*userGamma); 
-    Fy0 = D*sin(C*atan(B*a - E*(B*a - atan(B*a)))); 
+    E  = (Ey1 + Ey2*dfz) .* (1 - (Ey3 + Ey4*userGamma).*sign(a));
+    SV = Fz * (Vy1 + Vy2*dfz + (Vy3 + Vy4*dfz)*userGamma);
+    Fy0 = D.*sin(C*atan(B*a - E.*(B*a - atan(B*a))));
     Fy = Fy0 + SV;
 end
 
@@ -272,8 +272,8 @@ function Mz = MF_PAC2002_Mz_pure(~,alpha,Fz,userGamma,p)
     SH = Hz1 + Hz2*dfz + (Hz3 + Hz4*dfz)*userGamma;
     a = alpha + SH;
     B = (Bz1 + Bz2*dfz + Bz3*dfz^2) * (1 + Bz4*userGamma + Bz5*abs(userGamma));
-    E = (Ez1 + Ez2*dfz + Ez3*dfz^2)*(1 + (Ez4 + Ez5*userGamma)*((2/pi)*atan(B*C*a)));
-    trail = D * cos(C*atan(B*a - E*(B*a - atan(B*a))))*cos(alpha); 
-    Fy0 = MF_PAC2002_Fy_pure(0,alpha,Fz,userGamma,p);
-    Mz = -trail * Fy0;
-end 
+    E     = (Ez1 + Ez2*dfz + Ez3*dfz^2) .* (1 + (Ez4 + Ez5*userGamma).* ((2/pi)*atan(B*C*a)));
+    trail = D.*cos(C*atan(B*a - E.*(B*a - atan(B*a)))) .* cos(alpha);
+    Fy0   = MF_PAC2002_Fy_pure(0,alpha,Fz,userGamma,p);
+    Mz    = -trail .* Fy0;
+end
