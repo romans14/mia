@@ -43,10 +43,10 @@ end
 %% 5) Calcolo e plot delle ellissi per tutte le combinazioni alpha-kappa
 numA = numel(alphaMaxVec);
 numK = numel(kappaMaxVec);
-colors = lines(numA * numK);
+orange = [1 0.5 0];
+blue    = [0 0.4470 0.7410];
 figure('Name', sprintf('Ellissi di aderenza a Fz=%.0f N, P=%.0f Pa, cam=%.1f°', Fz, P, camDeg), 'NumberTitle', 'off');
 hold on; grid on;
-legEntries = cell(numA * numK,1);
 count = 0;
 for iA = 1:numA
     aMax = alphaMaxVec(iA);
@@ -76,17 +76,24 @@ for iA = 1:numA
         Fx4 = MF_PAC2002_Fx_pure(fliplr(kappa_vec), 0, Fz, gamma, P, p) .* MF_PAC2002_Gx(fliplr(kappa_vec), Afix, Fz, gamma, P, p);
         Fy4 = MF_PAC2002_Fy_pure(0, Afix, Fz, gamma, P, p) .* MF_PAC2002_Gy(fliplr(kappa_vec), Afix, Fz, gamma, P, p);
 
-        Fx_bnd = [Fx1, Fx2, Fx3, Fx4];
-        Fy_bnd = [Fy1, Fy2, Fy3, Fy4];
-
         count = count + 1;
-        plot(Fy_bnd, Fx_bnd, '-', 'Color', colors(count,:), 'LineWidth', 2);
-        legEntries{count} = sprintf('α_{max}=%.1f°, κ_{max}=%.2f', aMax, kMax);
+        label = sprintf('α_{max}=%.1f°, κ_{max}=%.2f', aMax, kMax);
+        h(1) = plot(Fy1, Fx1, '-', 'Color', orange, 'LineWidth', 2, 'DisplayName', label);
+        set(h(1),'UserData',struct('alpha',alpha_vec,'kappa',Kfix));
+        h(2) = plot(Fy2, Fx2, '-', 'Color', blue,    'LineWidth', 2, 'HandleVisibility','off');
+        set(h(2),'UserData',struct('alpha',Afix,'kappa',kappa_vec));
+        h(3) = plot(Fy3, Fx3, '-', 'Color', orange, 'LineWidth', 2, 'HandleVisibility','off');
+        set(h(3),'UserData',struct('alpha',fliplr(alpha_vec),'kappa',Kfix));
+        h(4) = plot(Fy4, Fx4, '-', 'Color', blue,    'LineWidth', 2, 'HandleVisibility','off');
+        set(h(4),'UserData',struct('alpha',Afix,'kappa',fliplr(kappa_vec)));
     end
 end
 xlabel('F_y [N]'); ylabel('F_x [N]');
 title(sprintf('Ellissi di aderenza PAC2002 a Fz=%.0fN, P=%.0fPa, cam=%.1f°', Fz, P, camDeg));
-legend(legEntries, 'Location', 'Best');
+legend('Location','Best');
+dcm = datacursormode(gcf);
+set(dcm,'UpdateFcn',@showSlip);
+datacursormode on;
 hold off;
 
 %% --- Local functions ----------------------------------------------
@@ -191,4 +198,13 @@ end
 
 function val = getParam(s,field,def)
     if isfield(s,field), val = s.(field); else val = def; end
+end
+
+function txt = showSlip(~,event_obj)
+    idx = event_obj.DataIndex;
+    ud = get(event_obj.Target,'UserData');
+    alpha = ud.alpha(idx);
+    kappa = ud.kappa(idx);
+    txt = {sprintf('alpha = %.2f deg', rad2deg(alpha)), ...
+           sprintf('kappa = %.4f', kappa)};
 end
