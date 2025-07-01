@@ -24,8 +24,9 @@ function compareTires_PAC2002_GUI()
     % ======================================================================
     % 3) vettori base
     % ======================================================================
-    kappaVec = linspace(-1,1,500);
-    alphaVec = deg2rad(linspace(-15,15,500));
+    % vettori preallocati (utili per i calcoli vettoriali nelle funzioni)
+    kappaVec = linspace(-1,1,500); %#ok<NASGU>
+    alphaVec = deg2rad(linspace(-15,15,500)); %#ok<NASGU>
 
     % labels Y dei grafici
     yLabels = {'F_x [N]','F_y [N]','M_z [Nm]'};
@@ -35,25 +36,25 @@ function compareTires_PAC2002_GUI()
     % ======================================================================
     % 4) creazione GUI
     % ======================================================================
-    h.fig = figure('Name','Confronto PAC2002','NumberTitle','off','Position',[100 100 1200 600]);
+    h.fig = figure('Name','Confronto PAC2002','NumberTitle','off','Position',[100 100 1100 650]);
     h.panel = uipanel('Parent',h.fig,'Title','Controlli','Units','normalized', ...
-                      'Position',[0.75 0.05 0.24 0.9]);
+                      'Position',[0.75 0.05 0.23 0.9]);
     % checkboxes per mostra/nascondi gomme
     h.chk1 = uicontrol('Parent',h.panel,'Style','checkbox','Units','normalized', ...
-        'Position',[0.1 0.94 0.8 0.04],'String',tireName1,'Value',1);
+        'Position',[0.1 0.94 0.8 0.04],'String',tireName1,'Value',1,'Callback',@updatePlots);
     h.chk2 = uicontrol('Parent',h.panel,'Style','checkbox','Units','normalized', ...
-        'Position',[0.1 0.90 0.8 0.04],'String',tireName2,'Value',1);
+        'Position',[0.1 0.90 0.8 0.04],'String',tireName2,'Value',1,'Callback',@updatePlots);
     % assi grafici
-    h.ax(1) = axes('Parent',h.fig,'Units','normalized','Position',[0.05 0.73 0.65 0.23]);
-    h.ax(2) = axes('Parent',h.fig,'Units','normalized','Position',[0.05 0.41 0.65 0.23]);
-    h.ax(3) = axes('Parent',h.fig,'Units','normalized','Position',[0.05 0.09 0.65 0.23]);
+    h.ax(1) = axes('Parent',h.fig,'Units','normalized','Position',[0.06 0.67 0.67 0.28]);
+    h.ax(2) = axes('Parent',h.fig,'Units','normalized','Position',[0.06 0.36 0.67 0.28]);
+    h.ax(3) = axes('Parent',h.fig,'Units','normalized','Position',[0.06 0.05 0.67 0.28]);
 
     % campi edit
-    h.edFz  = createLabeledEdit(h.panel,[0.1 0.84 0.35 0.05],'Fz [N]:','1000');
-    h.edP   = createLabeledEdit(h.panel,[0.1 0.78 0.35 0.05],'Pressione [Pa]:',num2str(getParam(p1,'IP_NOM',1e5)));
-    h.edCam = createLabeledEdit(h.panel,[0.1 0.72 0.35 0.05],'Camber [deg]:','0');
-    h.edK   = createLabeledEdit(h.panel,[0.1 0.66 0.35 0.05],'Slip Ratio κ:','0');
-    h.edA   = createLabeledEdit(h.panel,[0.1 0.60 0.35 0.05],'Slip Angle α [deg]:','0');
+    h.edFz  = createLabeledEdit(h.panel,[0.1 0.84 0.35 0.05],'Fz [N]:','1000',@updatePlots);
+    h.edP   = createLabeledEdit(h.panel,[0.1 0.78 0.35 0.05],'Pressione [Pa]:',num2str(getParam(p1,'IP_NOM',1e5)),@updatePlots);
+    h.edCam = createLabeledEdit(h.panel,[0.1 0.72 0.35 0.05],'Camber [deg]:','0',@updatePlots);
+    h.edK   = createLabeledEdit(h.panel,[0.1 0.66 0.35 0.05],'Slip Ratio κ:','0',@updatePlots);
+    h.edA   = createLabeledEdit(h.panel,[0.1 0.60 0.35 0.05],'Slip Angle α [deg]:','0',@updatePlots);
 
     % popup X-axis per ogni grafico
     for i=1:3
@@ -65,14 +66,12 @@ function compareTires_PAC2002_GUI()
     defaultValue = 2 * (i == 1) + 1 * (i ~= 1);  % i==1 → 2, altrimenti 1    
         
         h.popup(i) = uicontrol('Parent',h.panel,'Style','popupmenu','Units','normalized', ...
-            'Position',[0.1 yPos 0.8 0.04],'String',xOptions, 'Value', defaultValue);
+            'Position',[0.1 yPos 0.8 0.04],'String',xOptions, 'Value', defaultValue, 'Callback',@updatePlots);
     end
 
     % bottoni
     h.btnUpdate = uicontrol('Parent',h.panel,'Style','pushbutton','Units','normalized', ...
-        'Position',[0.1 0.14 0.35 0.06],'String','Aggiorna','FontWeight','bold','Callback',@updatePlots);
-    h.btnEllipse = uicontrol('Parent',h.panel,'Style','pushbutton','Units','normalized', ...
-        'Position',[0.45 0.14 0.35 0.06],'String','Friction Ellipse','Callback',@showEllipse);
+        'Position',[0.1 0.14 0.8 0.06],'String','Aggiorna','FontWeight','bold','Callback',@updatePlots);
 
     % testo di stato
     h.txt = uicontrol('Parent',h.panel,'Style','text','Units','normalized', ...
@@ -113,118 +112,6 @@ function compareTires_PAC2002_GUI()
             userFz,userP,userCam,userKappa,rad2deg(userAlpha));
     end
 
-    function showEllipse(~,~)   
-    if ~h.chk1.Value && ~h.chk2.Value
-        errordlg('Seleziona almeno una gomma!','Errore'); return;
-    end
-
-    userFz    = max(0,str2double(h.edFz.String));
-    userP     = max(0,str2double(h.edP.String));
-    userCam   = str2double(h.edCam.String); gamma = deg2rad(userCam);
-    userKappa = str2double(h.edK.String);
-    userAlpha = deg2rad(str2double(h.edA.String));
-
-    kVec = linspace(-1,1,50);
-    aVec = deg2rad(linspace(-15,15,50));
-
-    % verifica coefficienti longitudinali e laterali validi
-    hasLong1 = isfield(p1,'PDX1') && isfield(p1,'PCX1') && (p1.PDX1 ~= 0) && (p1.PCX1 ~= 0);
-    hasLat1  = isfield(p1,'PDY1') && isfield(p1,'PCY1') && (p1.PDY1 ~= 0) && (p1.PCY1 ~= 0);
-    hasLong2 = isfield(p2,'PDX1') && isfield(p2,'PCX1') && (p2.PDX1 ~= 0) && (p2.PCX1 ~= 0);
-    hasLat2  = isfield(p2,'PDY1') && isfield(p2,'PCY1') && (p2.PDY1 ~= 0) && (p2.PCY1 ~= 0);
-
-
-    % stampa messaggi nel Command Window
-    if hasLong1
-    fprintf('✅ Coefficienti longitudinali validi in: %s\n', tireName1);
-    elseif isfield(p1,'PDX1') && isfield(p1,'PCX1')
-    fprintf('⚠️ Coefficienti longitudinali nulli in: %s\n', tireName1);
-    end
-
-    if hasLat1
-    fprintf('✅ Coefficienti laterali validi in: %s\n', tireName1);
-    elseif isfield(p1,'PDY1') && isfield(p1,'PCY1')
-    fprintf('⚠️ Coefficienti laterali nulli in: %s\n', tireName1);
-    end
-
-    if hasLong2
-    fprintf('✅ Coefficienti longitudinali validi in: %s\n', tireName2);
-    elseif isfield(p2,'PDX1') && isfield(p2,'PCX1')
-    fprintf('⚠️ Coefficienti longitudinali nulli in: %s\n', tireName2);
-    end
-
-    if hasLat2
-    fprintf('✅ Coefficienti laterali validi in: %s\n', tireName2);
-    elseif isfield(p2,'PDY1') && isfield(p2,'PCY1')
-    fprintf('⚠️ Coefficienti laterali nulli in: %s\n', tireName2);
-    end
-
-
-    % nuova figura e asse
-    figE = figure('Name','Friction Ellipse','NumberTitle','off');
-    axE = axes('Parent',figE); hold(axE,'on'); grid(axE,'on');
-    hLine1 = []; hLine2 = [];
-
-    % plottaggio per la gomma 1
-    if h.chk1.Value
-        p1.userPressure = userP;
-        if hasLong1 && hasLat1
-            for a = aVec
-                Fx = arrayfun(@(k) MF_PAC2002_Fx_pure(k,0,userFz,a,p1),kVec);
-                Fy = arrayfun(@(k) MF_PAC2002_Fy_pure(k,a,userFz,a,p1),kVec);
-                hLine1(end+1) = plot(axE,Fx,Fy,'b-');
-            end
-            for k = kVec
-                Fx = arrayfun(@(al) MF_PAC2002_Fx_pure(k,0,userFz,al,p1),aVec);
-                Fy = arrayfun(@(al) MF_PAC2002_Fy_pure(k,al,userFz,al,p1),aVec);
-                hLine1(end+1) = plot(axE,Fx,Fy,'b-');
-            end
-        else
-            fprintf('⚠️ Coefficienti incompleti per %s: ellisse non tracciata.\n', tireName1);
-        end
-    end
-
-    % plottaggio per la gomma 2
-    if h.chk2.Value
-        p2.userPressure = userP;
-        if hasLong2 && hasLat2
-            for a = aVec
-                Fx = arrayfun(@(k) MF_PAC2002_Fx_pure(k,0,userFz,a,p2),kVec);
-                Fy = arrayfun(@(k) MF_PAC2002_Fy_pure(k,a,userFz,a,p2),kVec);
-                hLine2(end+1) = plot(axE,Fx,Fy,'r--');
-            end
-            for k = kVec
-                Fx = arrayfun(@(al) MF_PAC2002_Fx_pure(k,0,userFz,al,p2),aVec);
-                Fy = arrayfun(@(al) MF_PAC2002_Fy_pure(k,al,userFz,al,p2),aVec);
-                hLine2(end+1) = plot(axE,Fx,Fy,'r--');
-            end
-        else
-            fprintf('⚠️ Coefficienti incompleti per %s: ellisse non tracciata.\n', tireName2);
-        end
-    end
-
-    xlabel(axE,'F_x [N]'); ylabel(axE,'F_y [N]');
-    legendEntries = {};
-    if h.chk1.Value && hasLong1 && hasLat1, legendEntries{end+1} = tireName1; end
-    if h.chk2.Value && hasLong2 && hasLat2, legendEntries{end+1} = tireName2; end
-    if ~isempty(legendEntries)
-        legend(axE,legendEntries,'Location','Best','Interpreter','none');
-    end
-
-    % checkbox per show/hide
-    if ~isempty(hLine1)
-        uicontrol('Parent',figE,'Style','checkbox','String',tireName1, ...
-            'Value',true,'Units','normalized','Position',[0.8 0.9 0.15 0.05], ...
-            'Callback',@(src,~) set(hLine1,'Visible',src.Value*"on" + ~src.Value*"off"));
-    end
-    if ~isempty(hLine2)
-        uicontrol('Parent',figE,'Style','checkbox','String',tireName2, ...
-            'Value',true,'Units','normalized','Position',[0.8 0.84 0.15 0.05], ...
-            'Callback',@(src,~) set(hLine2,'Visible',src.Value*"on" + ~src.Value*"off"));
-    end
-
-    hold(axE,'off');
-    end
 end
 
 % helper compute curve generale
@@ -235,31 +122,31 @@ function [X,Y] = computeCurve(opt,Fz,gamma,kappa,alpha,p,outputType)
             alphaVec = deg2rad(X);
             switch outputType
                 case 'F_x [N]'
-                    Y = arrayfun(@(a) MF_PAC2002_Fx_pure(0,0,Fz,gamma,p), alphaVec);  % opzionale
+                    Y = MF_PAC2002_Fx_pure(zeros(size(alphaVec)),0,Fz,gamma,p);
                 case 'F_y [N]'
-                    Y = arrayfun(@(a) MF_PAC2002_Fy_pure(0,a,Fz,gamma,p), alphaVec);
+                    Y = MF_PAC2002_Fy_pure(0,alphaVec,Fz,gamma,p);
                 case 'M_z [Nm]'
-                    Y = arrayfun(@(a) MF_PAC2002_Mz_pure(0,a,Fz,gamma,p), alphaVec);
+                    Y = MF_PAC2002_Mz_pure(0,alphaVec,Fz,gamma,p);
             end
         case 'Longitudinal Slip'
             X = linspace(-1,1,500);
             switch outputType
                 case 'F_x [N]'
-                    Y = arrayfun(@(k) MF_PAC2002_Fx_pure(k,0,Fz,gamma,p), X);
+                    Y = MF_PAC2002_Fx_pure(X,0,Fz,gamma,p);
                 case 'F_y [N]'
-                    Y = arrayfun(@(k) MF_PAC2002_Fy_pure(k,0,Fz,gamma,p), X);
+                    Y = MF_PAC2002_Fy_pure(X,0,Fz,gamma,p);
                 case 'M_z [Nm]'
-                    Y = arrayfun(@(k) MF_PAC2002_Mz_pure(k,0,Fz,gamma,p), X);
+                    Y = MF_PAC2002_Mz_pure(X,0,Fz,gamma,p);
             end
         case 'Fz'
             X = linspace(0,3*p.FNOMIN,500);
             switch outputType
                 case 'F_x [N]'
-                    Y = arrayfun(@(fz) MF_PAC2002_Fx_pure(kappa,0,fz,gamma,p), X);
+                    Y = MF_PAC2002_Fx_pure(kappa,0,X,gamma,p);
                 case 'F_y [N]'
-                    Y = arrayfun(@(fz) MF_PAC2002_Fy_pure(kappa,alpha,fz,gamma,p), X);
+                    Y = MF_PAC2002_Fy_pure(kappa,alpha,X,gamma,p);
                 case 'M_z [Nm]'
-                    Y = arrayfun(@(fz) MF_PAC2002_Mz_pure(kappa,alpha,fz,gamma,p), X);
+                    Y = MF_PAC2002_Mz_pure(kappa,alpha,X,gamma,p);
             end
         otherwise
             X = []; Y = [];
@@ -267,11 +154,11 @@ function [X,Y] = computeCurve(opt,Fz,gamma,kappa,alpha,p,outputType)
 end
 
 % helper per edit box
-function hEdit = createLabeledEdit(parent,pos,label,initTag)
+function hEdit = createLabeledEdit(parent,pos,label,initTag,cb)
     uicontrol('Parent',parent,'Style','text','Units','normalized', ...
         'Position',pos,'String',label,'HorizontalAlignment','left');
     hEdit = uicontrol('Parent',parent,'Style','edit','Units','normalized', ...
-        'Position',[pos(1)+pos(3) pos(2) pos(3) pos(4)],'String',initTag);
+        'Position',[pos(1)+pos(3) pos(2) pos(3) pos(4)],'String',initTag,'Callback',cb);
 end
 
 % ============================================================================
