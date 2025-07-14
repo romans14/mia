@@ -73,11 +73,11 @@ updatePlot();
         handles = [];
         entries = {};
         if h.chk1.Value && ~isempty(h.line1)
-            handles(end+1) = plot(h.ax,nan,nan,'b--','LineWidth',1.5,'Tag','legendDummy');
+            handles(end+1) = plot(h.ax,nan,nan,'--','Color','k','LineWidth',1.5,'Tag','legendDummy');
             entries{end+1} = tireName1;
         end
         if h.chk2.Value && ~isempty(h.line2)
-            handles(end+1) = plot(h.ax,nan,nan,'r-','LineWidth',1.5,'Tag','legendDummy');
+            handles(end+1) = plot(h.ax,nan,nan,'-','Color','k','LineWidth',1.5,'Tag','legendDummy');
             entries{end+1} = tireName2;
         end
         if ~isempty(handles)
