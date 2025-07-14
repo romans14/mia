@@ -34,6 +34,11 @@ function compareTires_MxSlip_GUI()
         'Position',[0.1 0.90 0.8 0.04],'String',tireName2,'Value',1);
 
     h.ax = axes('Parent',h.fig,'Units','normalized','Position',[0.07 0.11 0.65 0.80]);
+    hold(h.ax,'on');
+    h.squareB = plot(h.ax,NaN,NaN,'s','LineStyle','none','MarkerFaceColor','b','MarkerEdgeColor','b','Visible','off');
+    h.squareG = plot(h.ax,NaN,NaN,'s','LineStyle','none','MarkerFaceColor','g','MarkerEdgeColor','g','Visible','off');
+    h.squareR = plot(h.ax,NaN,NaN,'s','LineStyle','none','MarkerFaceColor','r','MarkerEdgeColor','r','Visible','off');
+    hold(h.ax,'off');
 
     h.edFz  = createLabeledEdit(h.panel,[0.1 0.84 0.35 0.05],'Fz [N]:','1000');
     h.edP   = createLabeledEdit(h.panel,[0.1 0.78 0.35 0.05],'Pressione [Pa]:',num2str(getParam(p1,'IP_NOM',1e5)));
@@ -61,6 +66,15 @@ function compareTires_MxSlip_GUI()
         end
     end
 
+    function createLegendSquares()
+        h.squareB = plot(h.ax,NaN,NaN,'s','LineStyle','none', ...
+            'MarkerFaceColor','b','MarkerEdgeColor','b','Visible','off');
+        h.squareG = plot(h.ax,NaN,NaN,'s','LineStyle','none', ...
+            'MarkerFaceColor','g','MarkerEdgeColor','g','Visible','off');
+        h.squareR = plot(h.ax,NaN,NaN,'s','LineStyle','none', ...
+            'MarkerFaceColor','r','MarkerEdgeColor','r','Visible','off');
+    end
+
     function updatePlot(~,~)
         userFz  = str2double(h.edFz.String);
         userP   = str2double(h.edP.String);
@@ -69,20 +83,21 @@ function compareTires_MxSlip_GUI()
         p2.userPressure = userP;
 
         if ~h.holdOn
-            delete([h.lines1 h.lines2]);
+            delete([h.lines1 h.lines2 h.squareB h.squareG h.squareR]);
             h.lines1 = gobjects(0);
             h.lines2 = gobjects(0);
             cla(h.ax);
+            createLegendSquares();
         end
         hold(h.ax,'on'); grid(h.ax,'on');
 
         if h.chk1.Value
             Mx1 = arrayfun(@(a) MF_PAC2002_Mx_simple(a,userFz,userCam,p1),alphaVec);
-            h.lines1(end+1) = plot(h.ax,rad2deg(alphaVec),Mx1,'b-','LineWidth',1.5);
+            h.lines1(end+1) = plot(h.ax,rad2deg(alphaVec),Mx1,'k-','LineWidth',1.5);
         end
         if h.chk2.Value
             Mx2 = arrayfun(@(a) MF_PAC2002_Mx_simple(a,userFz,userCam,p2),alphaVec);
-            h.lines2(end+1) = plot(h.ax,rad2deg(alphaVec),Mx2,'r-','LineWidth',1.5);
+            h.lines2(end+1) = plot(h.ax,rad2deg(alphaVec),Mx2,'k--','LineWidth',1.5);
         end
 
         xlabel(h.ax,'Slip Angle [deg]');
@@ -98,6 +113,8 @@ function compareTires_MxSlip_GUI()
             legendHandles(end+1) = h.lines2(end);
             legendEntries{end+1} = tireName2;
         end
+        legendHandles = [legendHandles h.squareB h.squareG h.squareR];
+        legendEntries = [legendEntries {'TBC','TBC','TBC'}];
         if ~isempty(legendHandles)
             legend(h.ax,legendHandles,legendEntries,'Location','Best','Interpreter','none');
         else
