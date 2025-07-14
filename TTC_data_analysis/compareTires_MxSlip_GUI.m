@@ -35,9 +35,8 @@ function compareTires_MxSlip_GUI()
 
     h.ax = axes('Parent',h.fig,'Units','normalized','Position',[0.07 0.11 0.65 0.80]);
     hold(h.ax,'on');
-    h.squareB = plot(h.ax,NaN,NaN,'s','LineStyle','none','MarkerFaceColor','b','MarkerEdgeColor','b','Visible','off');
-    h.squareG = plot(h.ax,NaN,NaN,'s','LineStyle','none','MarkerFaceColor','g','MarkerEdgeColor','g','Visible','off');
-    h.squareR = plot(h.ax,NaN,NaN,'s','LineStyle','none','MarkerFaceColor','r','MarkerEdgeColor','r','Visible','off');
+    createLegendSquares();
+    createLegendLines();
     hold(h.ax,'off');
 
     h.edFz  = createLabeledEdit(h.panel,[0.1 0.84 0.35 0.05],'Fz [N]:','1000');
@@ -75,6 +74,11 @@ function compareTires_MxSlip_GUI()
             'MarkerFaceColor','r','MarkerEdgeColor','r','Visible','off');
     end
 
+    function createLegendLines()
+        h.dummy1  = plot(h.ax,NaN,NaN,'k-','LineWidth',1.5,'Visible','off');
+        h.dummy2  = plot(h.ax,NaN,NaN,'k--','LineWidth',1.5,'Visible','off');
+    end
+
     function updatePlot(~,~)
         userFz  = str2double(h.edFz.String);
         userP   = str2double(h.edP.String);
@@ -83,11 +87,12 @@ function compareTires_MxSlip_GUI()
         p2.userPressure = userP;
 
         if ~h.holdOn
-            delete([h.lines1 h.lines2 h.squareB h.squareG h.squareR]);
+            delete([h.lines1 h.lines2 h.squareB h.squareG h.squareR h.dummy1 h.dummy2]);
             h.lines1 = gobjects(0);
             h.lines2 = gobjects(0);
             cla(h.ax);
             createLegendSquares();
+            createLegendLines();
         end
         hold(h.ax,'on'); grid(h.ax,'on');
 
@@ -106,11 +111,11 @@ function compareTires_MxSlip_GUI()
         legendHandles = [];
         legendEntries = {};
         if ~isempty(h.lines1)
-            legendHandles(end+1) = h.lines1(end);
+            legendHandles(end+1) = h.dummy1;
             legendEntries{end+1} = tireName1;
         end
         if ~isempty(h.lines2)
-            legendHandles(end+1) = h.lines2(end);
+            legendHandles(end+1) = h.dummy2;
             legendEntries{end+1} = tireName2;
         end
         legendHandles = [legendHandles h.squareB h.squareG h.squareR];
