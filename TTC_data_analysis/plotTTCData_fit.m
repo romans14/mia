@@ -36,13 +36,13 @@ datasetNames = files;  % used for legend
 % Dynamically get all data fields except the 'range' variables (assuming same
 % fields in both MAT files)
 allFields = fieldnames(data1);
-exclude   = {'FZ','P','IA'};                                 % Fields to exclude from X axis options
+exclude   = {'IA'};                                 % Fields to exclude from X axis options
 xOptions  = setdiff(allFields, exclude, 'stable');         % Available X axis variables
 xLabels   = xOptions;    % Labels for X popup (modify for prettier text if desired)
 
 % Y axis options, dynamically get all data fields except the 'range' variables:
 allFields = fieldnames(data1);
-exclude   = {'FZ','P','IA'};
+exclude   = {'IA'};
 yOptions  = setdiff(allFields, exclude, 'stable');
 yLabels   = yOptions;
 
