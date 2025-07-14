@@ -84,21 +84,22 @@ updatePlot();
         handles = [];
         entries = {};
         if h.chk1.Value && ~isempty(h.line1)
-            handles(end+1) = plot(h.ax,nan,nan,'k--','LineWidth',1.5,'Visible','off','Tag','legendDummy'); %#ok<AGROW>
+            handles(end+1) = plot(h.ax,nan,nan,'k--','LineWidth',1.5,'Tag','legendDummy'); %#ok<AGROW>
             entries{end+1} = tireName1; %#ok<AGROW>
         end
         if h.chk2.Value && ~isempty(h.line2)
-            handles(end+1) = plot(h.ax,nan,nan,'k-','LineWidth',1.5,'Visible','off','Tag','legendDummy'); %#ok<AGROW>
+            handles(end+1) = plot(h.ax,nan,nan,'k-','LineWidth',1.5,'Tag','legendDummy'); %#ok<AGROW>
             entries{end+1} = tireName2; %#ok<AGROW>
         end
         tbcColors = [0 0 1; 0 1 0; 1 0 0];
         for ii = 1:size(tbcColors,1)
             handles(end+1) = plot(h.ax,nan,nan,'s','MarkerFaceColor',tbcColors(ii,:), ...
-                'MarkerEdgeColor',tbcColors(ii,:),'Visible','off','Tag','legendDummy'); %#ok<AGROW>
+                'MarkerEdgeColor',tbcColors(ii,:),'Tag','legendDummy'); %#ok<AGROW>
             entries{end+1} = 'TBC'; %#ok<AGROW>
         end
         if ~isempty(handles)
-            legend(h.ax,handles,entries,'Location','Best','Interpreter','none');
+            lgd = legend(h.ax,handles,entries,'Location','Best','Interpreter','none');
+            set(lgd,'TextColor','k');
         end
     end
 end
