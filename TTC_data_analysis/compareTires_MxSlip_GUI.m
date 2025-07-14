@@ -108,7 +108,7 @@ function compareTires_MxSlip_GUI()
         xlabel(h.ax,'Slip Angle [deg]');
         ylabel(h.ax,'M_x [Nm]');
 
-        legendHandles = [];
+        legendHandles = gobjects(0);
         legendEntries = {};
         if ~isempty(h.lines1)
             legendHandles(end+1) = h.dummy1;
