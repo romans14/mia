@@ -32,8 +32,7 @@ h.ax = axes('Parent',h.fig,'Units','normalized','Position',[0.08 0.15 0.58 0.75]
 h.edFz  = createLabeledEdit(h.panel,[0.1 0.84 0.35 0.05],'Fz [N]:','1000');
 h.edP   = createLabeledEdit(h.panel,[0.1 0.78 0.35 0.05],'Pressione [Pa]:',num2str(getParam(p1,'IP_NOM',1e5)));
 h.edCam = createLabeledEdit(h.panel,[0.1 0.72 0.35 0.05],'Camber [deg]:','0');
-h.edK   = createLabeledEdit(h.panel,[0.1 0.66 0.35 0.05],'Slip Ratio \kappa:','0');
-h.edA   = createLabeledEdit(h.panel,[0.1 0.60 0.35 0.05],'Slip Angle \alpha [deg]:','0');
+h.edA   = createLabeledEdit(h.panel,[0.1 0.66 0.35 0.05],'Slip Angle \alpha [deg]:','0');
 
 % buttons
 h.btnHold    = uicontrol('Parent',h.panel,'Style','togglebutton','Units','normalized', ...
