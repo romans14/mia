@@ -120,10 +120,11 @@ function compareTires_MxSlip_GUI()
         end
         legendHandles = [legendHandles h.squareB h.squareG h.squareR];
         legendEntries = [legendEntries {'TBC','TBC','TBC'}];
+        axes(h.ax); % ensure current axes for older MATLAB versions
         if ~isempty(legendHandles)
-            legend(h.ax,legendHandles,legendEntries,'Location','Best','Interpreter','none');
+            legend(legendHandles,legendEntries,'Location','Best','Interpreter','none');
         else
-            legend(h.ax,'off');
+            legend('off');
         end
         hold(h.ax,'off');
         h.txt.String = sprintf('Fz=%.0f N | P=%.0f Pa | Cam=%.1f°',userFz,userP,rad2deg(userCam));
