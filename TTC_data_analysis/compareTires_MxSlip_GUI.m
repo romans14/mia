@@ -48,6 +48,8 @@ function compareTires_MxSlip_GUI()
         'Position',[0.1 0.02 0.8 0.10],'FontSize',10,'HorizontalAlignment','left');
 
     h.holdOn = false;
+    h.lines1 = gobjects(0);
+    h.lines2 = gobjects(0);
     updatePlot();
 
     function toggleHold(src,~)
@@ -56,7 +58,6 @@ function compareTires_MxSlip_GUI()
             src.String = 'Hold On';
         else
             src.String = 'Hold Off';
-            cla(h.ax);
         end
     end
 
@@ -68,27 +69,39 @@ function compareTires_MxSlip_GUI()
         p2.userPressure = userP;
 
         if ~h.holdOn
+            delete([h.lines1 h.lines2]);
+            h.lines1 = gobjects(0);
+            h.lines2 = gobjects(0);
             cla(h.ax);
         end
         hold(h.ax,'on'); grid(h.ax,'on');
 
         if h.chk1.Value
             Mx1 = arrayfun(@(a) MF_PAC2002_Mx_simple(a,userFz,userCam,p1),alphaVec);
-            plot(h.ax,rad2deg(alphaVec),Mx1,'b-','LineWidth',1.5);
+            h.lines1(end+1) = plot(h.ax,rad2deg(alphaVec),Mx1,'b-','LineWidth',1.5);
         end
         if h.chk2.Value
             Mx2 = arrayfun(@(a) MF_PAC2002_Mx_simple(a,userFz,userCam,p2),alphaVec);
-            plot(h.ax,rad2deg(alphaVec),Mx2,'r-','LineWidth',1.5);
+            h.lines2(end+1) = plot(h.ax,rad2deg(alphaVec),Mx2,'r-','LineWidth',1.5);
         end
 
         xlabel(h.ax,'Slip Angle [deg]');
         ylabel(h.ax,'M_x [Nm]');
 
+        legendHandles = [];
         legendEntries = {};
-        if h.chk1.Value, legendEntries{end+1} = tireName1; end
-        if h.chk2.Value, legendEntries{end+1} = tireName2; end
-        if ~isempty(legendEntries)
-            legend(h.ax,legendEntries,'Location','Best','Interpreter','none');
+        if ~isempty(h.lines1)
+            legendHandles(end+1) = h.lines1(end);
+            legendEntries{end+1} = tireName1;
+        end
+        if ~isempty(h.lines2)
+            legendHandles(end+1) = h.lines2(end);
+            legendEntries{end+1} = tireName2;
+        end
+        if ~isempty(legendHandles)
+            legend(h.ax,legendHandles,legendEntries,'Location','Best','Interpreter','none');
+        else
+            legend(h.ax,'off');
         end
         hold(h.ax,'off');
         h.txt.String = sprintf('Fz=%.0f N | P=%.0f Pa | Cam=%.1f°',userFz,userP,rad2deg(userCam));
