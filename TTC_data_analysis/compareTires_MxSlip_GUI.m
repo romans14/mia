@@ -34,10 +34,6 @@ function compareTires_MxSlip_GUI()
         'Position',[0.1 0.90 0.8 0.04],'String',tireName2,'Value',1);
 
     h.ax = axes('Parent',h.fig,'Units','normalized','Position',[0.07 0.11 0.65 0.80]);
-    hold(h.ax,'on');
-    createLegendSquares();
-    createLegendLines();
-    hold(h.ax,'off');
 
     h.edFz  = createLabeledEdit(h.panel,[0.1 0.84 0.35 0.05],'Fz [N]:','1000');
     h.edP   = createLabeledEdit(h.panel,[0.1 0.78 0.35 0.05],'Pressione [Pa]:',num2str(getParam(p1,'IP_NOM',1e5)));
@@ -65,19 +61,6 @@ function compareTires_MxSlip_GUI()
         end
     end
 
-    function createLegendSquares()
-        h.squareB = plot(h.ax,NaN,NaN,'s','LineStyle','none', ...
-            'MarkerFaceColor','b','MarkerEdgeColor','b','Visible','off');
-        h.squareG = plot(h.ax,NaN,NaN,'s','LineStyle','none', ...
-            'MarkerFaceColor','g','MarkerEdgeColor','g','Visible','off');
-        h.squareR = plot(h.ax,NaN,NaN,'s','LineStyle','none', ...
-            'MarkerFaceColor','r','MarkerEdgeColor','r','Visible','off');
-    end
-
-    function createLegendLines()
-        h.dummy1  = plot(h.ax,NaN,NaN,'k-','LineWidth',1.5,'Visible','off');
-        h.dummy2  = plot(h.ax,NaN,NaN,'k--','LineWidth',1.5,'Visible','off');
-    end
 
     function updatePlot(~,~)
         userFz  = str2double(h.edFz.String);
@@ -87,12 +70,10 @@ function compareTires_MxSlip_GUI()
         p2.userPressure = userP;
 
         if ~h.holdOn
-            delete([h.lines1 h.lines2 h.squareB h.squareG h.squareR h.dummy1 h.dummy2]);
+            delete([h.lines1 h.lines2]);
             h.lines1 = gobjects(0);
             h.lines2 = gobjects(0);
             cla(h.ax);
-            createLegendSquares();
-            createLegendLines();
         end
         hold(h.ax,'on'); grid(h.ax,'on');
 
@@ -108,26 +89,35 @@ function compareTires_MxSlip_GUI()
         xlabel(h.ax,'Slip Angle [deg]');
         ylabel(h.ax,'M_x [Nm]');
 
-        legendHandles = gobjects(0);
-        legendEntries = {};
-        if ~isempty(h.lines1)
-            legendHandles(end+1) = h.dummy1;
-            legendEntries{end+1} = tireName1;
-        end
-        if ~isempty(h.lines2)
-            legendHandles(end+1) = h.dummy2;
-            legendEntries{end+1} = tireName2;
-        end
-        legendHandles = [legendHandles h.squareB h.squareG h.squareR];
-        legendEntries = [legendEntries {'TBC','TBC','TBC'}];
-        axes(h.ax); % ensure current axes for older MATLAB versions
-        if ~isempty(legendHandles)
-            legend(legendHandles,legendEntries,'Location','Best','Interpreter','none');
-        else
-            legend('off');
-        end
+        updateLegend();
         hold(h.ax,'off');
         h.txt.String = sprintf('Fz=%.0f N | P=%.0f Pa | Cam=%.1f°',userFz,userP,rad2deg(userCam));
+    end
+
+    function updateLegend()
+        delete(findobj(h.ax,'Tag','legendDummy'));
+        handles = [];
+        entries = {};
+        if h.chk1.Value && ~isempty(h.lines1)
+            handles(end+1) = plot(h.ax,nan,nan,'k-','LineWidth',1.5,'Tag','legendDummy'); %#ok<AGROW>
+            entries{end+1} = tireName1; %#ok<AGROW>
+        end
+        if h.chk2.Value && ~isempty(h.lines2)
+            handles(end+1) = plot(h.ax,nan,nan,'k--','LineWidth',1.5,'Tag','legendDummy'); %#ok<AGROW>
+            entries{end+1} = tireName2; %#ok<AGROW>
+        end
+        tbcColors = [0 0 1; 0 1 0; 1 0 0];
+        for ii = 1:size(tbcColors,1)
+            handles(end+1) = plot(h.ax,nan,nan,'s','MarkerFaceColor',tbcColors(ii,:), ...
+                'MarkerEdgeColor',tbcColors(ii,:),'Tag','legendDummy'); %#ok<AGROW>
+            entries{end+1} = 'TBC'; %#ok<AGROW>
+        end
+        if ~isempty(handles)
+            lgd = legend(h.ax,handles,entries,'Location','Best','Interpreter','none');
+            set(lgd,'TextColor','k');
+        else
+            legend(h.ax,'off');
+        end
     end
 end
 
