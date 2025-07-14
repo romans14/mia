@@ -27,8 +27,8 @@ data1 = load(fullpaths{1}, 'AMBTMP', 'ET', 'MX', 'N', 'NFX', 'NFY', 'RE', 'RL', 
 data2 = load(fullpaths{2}, 'AMBTMP', 'ET', 'MX', 'N', 'NFX', 'NFY', 'RE', 'RL', ...
     'RST', 'RUN', 'SA', 'SL', 'SR','FZ','FX','FY','MZ','P','IA','TSTI','TSTC', ...
     'TSTO', 'V');
-TSTmed1 = (data1.TSTI + data1.TSTC + data1.TSTO)/3;
-TSTmed2 = (data2.TSTI + data2.TSTC + data2.TSTO)/3;
+%TSTmed1 = (data1.TSTI + data1.TSTC + data1.TSTO)/3;
+%TSTmed2 = (data2.TSTI + data2.TSTC + data2.TSTO)/3;
 
 datasetNames = files;  % used for legend
 
@@ -116,22 +116,22 @@ function updatePlot(~,~)
     X1 = data1.(xVar); Y1 = data1.(yVar);
     mask1 = (data1.FZ>=fzMin & data1.FZ<=fzMax) & (data1.P>=pMin & data1.P<=pMax) & ...
             (data1.IA>=iaMin & data1.IA<=iaMax);
-    xF1 = X1(mask1); yF1 = Y1(mask1); T1 = TSTmed1(mask1);
-    [xF1, idx] = sort(xF1); yF1 = yF1(idx); T1 = T1(idx);
+    xF1 = X1(mask1); yF1 = Y1(mask1); %T1 = TSTmed1(mask1);
+    [xF1, idx] = sort(xF1); yF1 = yF1(idx); %T1 = T1(idx);
 
     % Dataset 2
     X2 = data2.(xVar); Y2 = data2.(yVar);
     mask2 = (data2.FZ>=fzMin & data2.FZ<=fzMax) & (data2.P>=pMin & data2.P<=pMax) & ...
             (data2.IA>=iaMin & data2.IA<=iaMax);
-    xF2 = X2(mask2); yF2 = Y2(mask2); T2 = TSTmed2(mask2);
-    [xF2, idx] = sort(xF2); yF2 = yF2(idx); T2 = T2(idx);
+    xF2 = X2(mask2); yF2 = Y2(mask2); %T2 = TSTmed2(mask2);
+    [xF2, idx] = sort(xF2); yF2 = yF2(idx); %T2 = T2(idx);
 
     cla(hAx);
     hold(hAx,'on');
-    scatter(hAx, xF1, yF1, 36, T1, 'filled','Marker','o');
-    scatter(hAx, xF2, yF2, 36, T2, 'filled','Marker','^');
-    colormap(hAx,'jet'); colorbar(hAx);
-    caxis(hAx,[min([T1;T2]) max([T1;T2])]);
+    scatter(hAx, xF1, yF1, 36, 'filled','Marker','o');
+    scatter(hAx, xF2, yF2, 36, 'filled','Marker','^');
+    %colormap(hAx,'jet'); colorbar(hAx);
+    %caxis(hAx,[min([T1;T2]) max([T1;T2])]);
     hold(hAx,'off');
     xlabel(hAx, xLabel,'Interpreter','none');
     ylabel(hAx, yLabel,'Interpreter','none');
