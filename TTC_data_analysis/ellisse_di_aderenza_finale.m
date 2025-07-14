@@ -34,11 +34,21 @@ camDeg = input('Inserisci l''angolo di camber [deg]: ');
 gamma = deg2rad(camDeg);
 
 %% 4) Definizione dei range di slip massimi
-alphaMaxVec = input('Inserisci vettore di α_max [deg] (es. [10 15 20]): ');
-kappaMaxVec = input('Inserisci vettore di κ_max (es. [0.2 0.3 0.4]): ');
-if isempty(alphaMaxVec) || isempty(kappaMaxVec)
-    error('I vettori di range di slip non possono essere vuoti.');
+amin = input('Valore minimo di α_{max} [deg]: ');
+amax = input('Valore massimo di α_{max} [deg]: ');
+if isempty(amin) || isempty(amax) || amin > amax
+    error('Intervallo di α_{max} non valido.');
 end
+alphaMaxVec = unique([amin:1:amax, 0]);
+alphaMaxVec = sort(alphaMaxVec);
+
+kmin = input('Valore minimo di κ_{max}: ');
+kmax = input('Valore massimo di κ_{max}: ');
+if isempty(kmin) || isempty(kmax) || kmin > kmax
+    error('Intervallo di κ_{max} non valido.');
+end
+kappaMaxVec = unique([kmin:0.03:kmax, 0]);
+kappaMaxVec = sort(kappaMaxVec);
 
 %% 5) Calcolo e plot delle ellissi per tutte le combinazioni alpha-kappa
 numA = numel(alphaMaxVec);
@@ -78,13 +88,13 @@ for iA = 1:numA
 
         count = count + 1;
         label = sprintf('α_{max}=%.1f°, κ_{max}=%.2f', aMax, kMax);
-        h(1) = plot(Fy1, Fx1, '-', 'Color', orange, 'LineWidth', 2, 'DisplayName', label);
+        h(1) = plot(Fy1, Fx1, '-', 'Color', orange, 'LineWidth', 1, 'DisplayName', label);
         set(h(1),'UserData',struct('alpha',alpha_vec,'kappa',Kfix));
-        h(2) = plot(Fy2, Fx2, '-', 'Color', blue,    'LineWidth', 2, 'HandleVisibility','off');
+        h(2) = plot(Fy2, Fx2, '-', 'Color', blue,    'LineWidth', 1, 'HandleVisibility','off');
         set(h(2),'UserData',struct('alpha',Afix,'kappa',kappa_vec));
-        h(3) = plot(Fy3, Fx3, '-', 'Color', orange, 'LineWidth', 2, 'HandleVisibility','off');
+        h(3) = plot(Fy3, Fx3, '-', 'Color', orange, 'LineWidth', 1, 'HandleVisibility','off');
         set(h(3),'UserData',struct('alpha',fliplr(alpha_vec),'kappa',Kfix));
-        h(4) = plot(Fy4, Fx4, '-', 'Color', blue,    'LineWidth', 2, 'HandleVisibility','off');
+        h(4) = plot(Fy4, Fx4, '-', 'Color', blue,    'LineWidth', 1, 'HandleVisibility','off');
         set(h(4),'UserData',struct('alpha',Afix,'kappa',fliplr(kappa_vec)));
     end
 end
