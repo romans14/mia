@@ -37,8 +37,11 @@ h.edA   = createLabeledEdit(h.panel,[0.1 0.66 0.35 0.05],'Slip Angle \alpha [deg
 % buttons
 h.btnHold    = uicontrol('Parent',h.panel,'Style','togglebutton','Units','normalized', ...
     'Position',[0.1 0.20 0.35 0.06],'String','HOLD');
-h.btnUpdate  = uicontrol('Parent',h.panel,'Style','pushbutton','Units','normalized', ...
+    h.btnUpdate  = uicontrol('Parent',h.panel,'Style','pushbutton','Units','normalized', ...
     'Position',[0.1 0.14 0.35 0.06],'String','Aggiorna','FontWeight','bold','Callback',@updatePlot);
+
+% store line handles and color listeners
+h.line1 = gobjects(0); h.line2 = gobjects(0); h.colorListeners = event.listener.empty;
 
 % status text
 h.txt = uicontrol('Parent',h.panel,'Style','text','Units','normalized', ...
@@ -55,25 +58,64 @@ updatePlot();
         alphaDeg = linspace(-15,15,500); alphaRad = deg2rad(alphaDeg);
         if ~get(h.btnHold,'Value')
             cla(h.ax);
+            h.line1 = gobjects(0); h.line2 = gobjects(0);
+            delete(h.colorListeners); h.colorListeners = event.listener.empty;
         end
         axes(h.ax); hold on;
+        default1 = [0 0 1];  % blue
+        default2 = [1 0 0];  % red
         if h.chk1.Value
             Fy1 = arrayfun(@(a) MF_PAC2002_Fy_pure(0,a,userFz,gamma,p1),alphaRad);
-            plot(alphaDeg,Fy1,'b-','LineWidth',1.5);
+            ln = plot(alphaDeg,Fy1,'--','Color',default1,'LineWidth',1.5);
+            h.line1(end+1) = ln;
+            h.colorListeners(end+1) = addlistener(ln,'Color','PostSet',@(~,~) updateLegend());
         end
         if h.chk2.Value
             Fy2 = arrayfun(@(a) MF_PAC2002_Fy_pure(0,a,userFz,gamma,p2),alphaRad);
-            plot(alphaDeg,Fy2,'r-','LineWidth',1.5);
+            ln = plot(alphaDeg,Fy2,'-','Color',default2,'LineWidth',1.5);
+            h.line2(end+1) = ln;
+            h.colorListeners(end+1) = addlistener(ln,'Color','PostSet',@(~,~) updateLegend());
         end
         grid on; xlabel('Slip Angle [deg]'); ylabel('F_y [N]');
-        legendEntries = {};
-        if h.chk1.Value, legendEntries{end+1}=tireName1; end
-        if h.chk2.Value, legendEntries{end+1}=tireName2; end
-        if ~isempty(legendEntries)
-            legend(h.ax,legendEntries,'Location','Best','Interpreter','none');
-        end
+        updateLegend();
         hold off;
         h.txt.String = sprintf('Fz=%.0f N | P=%.0f Pa | Cam=%.1f^o',userFz,userP,userCam);
+    end
+
+    function updateLegend()
+        lines = findobj(h.ax,'Type','line');
+        entries = {};
+        handles = [];
+        default1 = [0 0 1];
+        default2 = [1 0 0];
+        % latest lines for each tire for the real legend entry
+        if h.chk1.Value && ~isempty(h.line1)
+            handles(end+1) = h.line1(end); %#ok<AGROW>
+            entries{end+1} = tireName1; %#ok<AGROW>
+        end
+        if h.chk2.Value && ~isempty(h.line2)
+            handles(end+1) = h.line2(end); %#ok<AGROW>
+            entries{end+1} = tireName2; %#ok<AGROW>
+        end
+        % collect unique additional colors
+        extraColors = [];
+        for ln = reshape(lines,1,[])
+            col = ln.Color;
+            style = ln.LineStyle;
+            isDefault1 = isequal(col,default1) && strcmp(style,'--');
+            isDefault2 = isequal(col,default2) && strcmp(style,'-');
+            if ~isDefault1 && ~isDefault2
+                if isempty(extraColors) || ~ismember(col,extraColors,'rows')
+                    handles(end+1) = plot(h.ax,nan,nan,'s','MarkerFaceColor',col, ...
+                        'MarkerEdgeColor',col,'Visible','off'); %#ok<AGROW>
+                    entries{end+1} = 'TBC'; %#ok<AGROW>
+                    extraColors(end+1,:) = col; %#ok<AGROW>
+                end
+            end
+        end
+        if ~isempty(handles)
+            legend(h.ax,handles,entries,'Location','Best','Interpreter','none');
+        end
     end
 end
 
