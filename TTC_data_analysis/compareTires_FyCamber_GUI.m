@@ -21,7 +21,7 @@ function compareTires_FyCamber_GUI()
 
     % vectors
     camberDeg = -4:0.5:4;
-    defaultAlphaMax = 15;  % [deg]
+    defaultAlpha = 6;  % [deg]
 
     % ======================================================================
     % 3) GUI creation
@@ -40,7 +40,7 @@ function compareTires_FyCamber_GUI()
     h.edP  = createLabeledEdit(h.panel,[0.1 0.66 0.4 0.06],'Pressione [Pa]:', ...
                                num2str(getParam(p1,'IP_NOM',1e5)));
     h.edAlpha = createLabeledEdit(h.panel,[0.1 0.56 0.4 0.06], ...
-        'Slip Angle ± [deg]:',num2str(defaultAlphaMax));
+        'Slip Angle [deg]:',num2str(defaultAlpha));
     h.btnUpdate = uicontrol('Parent',h.panel,'Style','pushbutton','Units','normalized', ...
                 'Position',[0.1 0.15 0.35 0.08],'String','Aggiorna', ...
                 'FontWeight','bold','Callback',@updatePlot);
@@ -64,25 +64,22 @@ function compareTires_FyCamber_GUI()
         userFz = max(0,str2double(h.edFz.String));
         userP  = max(0,str2double(h.edP.String));
         p1.userPressure = userP; p2.userPressure = userP;
-        userAlphaMax = str2double(h.edAlpha.String);
-        if isnan(userAlphaMax)
-            userAlphaMax = defaultAlphaMax;
-            h.edAlpha.String = num2str(defaultAlphaMax);
+        userAlpha = str2double(h.edAlpha.String);
+        if isnan(userAlpha)
+            userAlpha = defaultAlpha;
+            h.edAlpha.String = num2str(defaultAlpha);
         end
-        userAlphaMax = abs(userAlphaMax);
-        alphaVec = deg2rad(linspace(-userAlphaMax,userAlphaMax,400));
+        alpha = deg2rad(userAlpha);
         gammaVec = deg2rad(camberDeg);
         Fy1 = zeros(size(gammaVec));
         Fy2 = zeros(size(gammaVec));
         for ii = 1:length(gammaVec)
             g = gammaVec(ii);
             if h.chk1.Value
-                Fy = arrayfun(@(a) MF_PAC2002_Fy_pure(0,a,userFz,g,p1),alphaVec);
-                Fy1(ii) = max(abs(Fy));
+                Fy1(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,g,p1);
             end
             if h.chk2.Value
-                Fy = arrayfun(@(a) MF_PAC2002_Fy_pure(0,a,userFz,g,p2),alphaVec);
-                Fy2(ii) = max(abs(Fy));
+                Fy2(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,g,p2);
             end
         end
         axes(h.ax); hold on;
@@ -94,10 +91,10 @@ function compareTires_FyCamber_GUI()
         end
         grid(h.ax,'on');
         xlabel(h.ax,'Camber [deg]');
-        ylabel(h.ax,'|F_y|_{max} [N]');
+        ylabel(h.ax,'F_y [N]');
         legend(h.ax,'-DynamicLegend','Location','best','Interpreter','none');
-        h.txt.String = sprintf('Fz=%.0f N | P=%.0f Pa | |α|≤%.1f°', ...
-                               userFz,userP,userAlphaMax);
+        h.txt.String = sprintf('Fz=%.0f N | P=%.0f Pa | α=%.1f°', ...
+                               userFz,userP,userAlpha);
         if ~holdState
             hold(h.ax,'off');
         end
