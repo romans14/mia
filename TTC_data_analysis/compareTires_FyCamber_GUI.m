@@ -21,7 +21,7 @@ function compareTires_FyCamber_GUI()
 
     % vectors
     camberDeg = -4:0.5:4;
-    alphaVec = deg2rad(linspace(-15,15,400));
+    defaultAlphaMax = 15;  % [deg]
 
     % ======================================================================
     % 3) GUI creation
@@ -39,6 +39,8 @@ function compareTires_FyCamber_GUI()
     h.edFz = createLabeledEdit(h.panel,[0.1 0.76 0.4 0.06],'Fz [N]:','1000');
     h.edP  = createLabeledEdit(h.panel,[0.1 0.66 0.4 0.06],'Pressione [Pa]:', ...
                                num2str(getParam(p1,'IP_NOM',1e5)));
+    h.edAlpha = createLabeledEdit(h.panel,[0.1 0.56 0.4 0.06], ...
+        'Slip Angle ± [deg]:',num2str(defaultAlphaMax));
     h.btnUpdate = uicontrol('Parent',h.panel,'Style','pushbutton','Units','normalized', ...
                 'Position',[0.1 0.15 0.35 0.08],'String','Aggiorna', ...
                 'FontWeight','bold','Callback',@updatePlot);
@@ -62,6 +64,13 @@ function compareTires_FyCamber_GUI()
         userFz = max(0,str2double(h.edFz.String));
         userP  = max(0,str2double(h.edP.String));
         p1.userPressure = userP; p2.userPressure = userP;
+        userAlphaMax = str2double(h.edAlpha.String);
+        if isnan(userAlphaMax)
+            userAlphaMax = defaultAlphaMax;
+            h.edAlpha.String = num2str(defaultAlphaMax);
+        end
+        userAlphaMax = abs(userAlphaMax);
+        alphaVec = deg2rad(linspace(-userAlphaMax,userAlphaMax,400));
         gammaVec = deg2rad(camberDeg);
         Fy1 = zeros(size(gammaVec));
         Fy2 = zeros(size(gammaVec));
@@ -87,7 +96,8 @@ function compareTires_FyCamber_GUI()
         xlabel(h.ax,'Camber [deg]');
         ylabel(h.ax,'|F_y|_{max} [N]');
         legend(h.ax,'-DynamicLegend','Location','best','Interpreter','none');
-        h.txt.String = sprintf('Fz=%.0f N | P=%.0f Pa',userFz,userP);
+        h.txt.String = sprintf('Fz=%.0f N | P=%.0f Pa | |α|≤%.1f°', ...
+                               userFz,userP,userAlphaMax);
         if ~holdState
             hold(h.ax,'off');
         end
@@ -144,7 +154,7 @@ end
 % ============================================================================
 % PAC2002 pure slip Fy formulation
 % ============================================================================
-function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,userGamma,p)
+function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,gamma,p)
     Fz0 = p.FNOMIN;
     dfz = (Fz - Fz0)/Fz0;
     pi0 = getParam(p,'IP_NOM',2e5);
@@ -159,16 +169,16 @@ function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,userGamma,p)
     py1 = getParam(p,'PPY1',0); py2 = getParam(p,'PPY2',0); py3 = getParam(p,'PPY3',0);
     py4 = getParam(p,'PPY4',0);
 
-    mu = (Dy1 + Dy2*dfz) * (1 + py3*dpi + py4*dpi^2) * (1 - Dy3*userGamma^2);
+    mu = (Dy1 + Dy2*dfz) * (1 + py3*dpi + py4*dpi^2) * (1 - Dy3*gamma^2);
     D = mu * Fz;
     C = Cy1;
     Ky0 = Ky1 * Fz0 * (1 + py1*dpi) * sin(2*atan(Fz/(Ky2*Fz0*(1 + py2*dpi))));
-    K = Ky0 * (1 - Ky3*abs(userGamma));
+    K = Ky0 * (1 - Ky3*abs(gamma));
     B = K/(C*D + eps);
-    SH = (Hy1 + Hy2*dfz) + Hy3*userGamma;
+    SH = (Hy1 + Hy2*dfz) + Hy3*gamma;
     a = alpha + SH;
-    E = (Ey1 + Ey2*dfz) * (1 - (Ey3 + Ey4*userGamma)*sign(a));
-    SV = Fz * (Vy1 + Vy2*dfz + (Vy3 + Vy4*dfz)*userGamma);
+    E = (Ey1 + Ey2*dfz) * (1 - (Ey3 + Ey4*gamma)*sign(a));
+    SV = Fz * (Vy1 + Vy2*dfz + (Vy3 + Vy4*dfz)*gamma);
     Fy0 = D * sin(C*atan(B*a - E*(B*a - atan(B*a))));
     Fy = Fy0 + SV;
 end
