@@ -18,6 +18,12 @@ function compareTires_FyCamber_GUI()
     p2 = readTirParameters(tirFile2);
     tireName1 = getParam(p1,'tireName',name1);
     tireName2 = getParam(p2,'tireName',name2);
+    tyreSide1 = resolveTyreSide(getParam(p1,'TYRESIDE','LEFT'));
+    tyreSide2 = resolveTyreSide(getParam(p2,'TYRESIDE','LEFT'));
+    camberSign1 = camberSignFromSide(tyreSide1);
+    camberSign2 = camberSignFromSide(tyreSide2);
+    displayName1 = sprintf('%s [%s]',tireName1,tyreSide1);
+    displayName2 = sprintf('%s [%s]',tireName2,tyreSide2);
 
     % vectors
     camberDeg = -4:0.5:4;
@@ -33,9 +39,13 @@ function compareTires_FyCamber_GUI()
     h.panel = uipanel('Parent',h.fig,'Title','Controlli','Units','normalized', ...
                       'Position',[0.72 0.05 0.26 0.9]);
     h.chk1 = uicontrol('Parent',h.panel,'Style','checkbox','Units','normalized', ...
-                       'Position',[0.1 0.92 0.8 0.05],'String',tireName1,'Value',1);
+                       'Position',[0.1 0.92 0.8 0.05], ...
+                       'String',displayName1, ...
+                       'Value',1,'TooltipString','Seleziona per mostrare la gomma 1');
     h.chk2 = uicontrol('Parent',h.panel,'Style','checkbox','Units','normalized', ...
-                       'Position',[0.1 0.86 0.8 0.05],'String',tireName2,'Value',1);
+                       'Position',[0.1 0.86 0.8 0.05], ...
+                       'String',displayName2, ...
+                       'Value',1,'TooltipString','Seleziona per mostrare la gomma 2');
     h.edFz = createLabeledEdit(h.panel,[0.1 0.76 0.4 0.06],'Fz [N]:','1000');
     h.edP  = createLabeledEdit(h.panel,[0.1 0.66 0.4 0.06],'Pressione [Pa]:', ...
                                num2str(getParam(p1,'IP_NOM',1e5)));
@@ -75,20 +85,21 @@ function compareTires_FyCamber_GUI()
         Fy2 = zeros(size(gammaSamplesDeg));
         for ii = 1:length(gammaSamplesDeg)
             gammaDeg = gammaSamplesDeg(ii);
-            gammaRad = deg2rad(gammaDeg);
+            gammaRad1 = deg2rad(camberSign1 * gammaDeg);
+            gammaRad2 = deg2rad(camberSign2 * gammaDeg);
             if h.chk1.Value
-                Fy1(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,gammaRad,p1);
+                Fy1(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,gammaRad1,p1);
             end
             if h.chk2.Value
-                Fy2(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,gammaRad,p2);
+                Fy2(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,gammaRad2,p2);
             end
         end
         axes(h.ax); hold on;
         if h.chk1.Value
-            plot(h.ax,camberDeg,Fy1,'b-','LineWidth',1.5,'DisplayName',tireName1);
+            plot(h.ax,camberDeg,Fy1,'b-','LineWidth',1.5,'DisplayName',displayName1);
         end
         if h.chk2.Value
-            plot(h.ax,camberDeg,Fy2,'r--','LineWidth',1.5,'DisplayName',tireName2);
+            plot(h.ax,camberDeg,Fy2,'r--','LineWidth',1.5,'DisplayName',displayName2);
         end
         grid(h.ax,'on');
         xlabel(h.ax,'Camber [deg]');
@@ -129,6 +140,13 @@ function params = readTirParameters(tirFilename)
             name = tokensNum{1}{1};
             val = str2double(tokensNum{1}{2});
             if ~isnan(val), params.(name) = val; end
+        else
+            tokensStr = regexp(line,'^\s*(\S+)\s*=\s*''([^'']*)''','tokens');
+            if ~isempty(tokensStr)
+                name = tokensStr{1}{1};
+                val = strtrim(tokensStr{1}{2});
+                params.(name) = val;
+            end
         end
         if contains(line,'% : COMMENT : Tire')
             t = regexp(line,'% : COMMENT : Tire\s+(.*)','tokens');
@@ -146,6 +164,36 @@ function val = getParam(s,field,def)
         val = s.(field);
     else
         val = def;
+    end
+end
+
+function side = resolveTyreSide(sideValue)
+    if isa(sideValue,'string')
+        sideValue = char(sideValue);
+    elseif iscell(sideValue) && ~isempty(sideValue)
+        sideValue = sideValue{1};
+    end
+    if ischar(sideValue)
+        sideUpper = upper(strtrim(sideValue));
+    else
+        sideUpper = '';
+    end
+    if strncmp(sideUpper,'RIGHT',5)
+        side = 'RIGHT';
+    elseif strncmp(sideUpper,'LEFT',4)
+        side = 'LEFT';
+    elseif isempty(sideUpper)
+        side = 'LEFT';
+    else
+        side = sideUpper;
+    end
+end
+
+function signVal = camberSignFromSide(tyreSide)
+    if strncmpi(tyreSide,'RIGHT',5)
+        signVal = -1;
+    else
+        signVal = 1;
     end
 end
 
