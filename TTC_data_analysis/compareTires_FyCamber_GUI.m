@@ -75,11 +75,12 @@ function compareTires_FyCamber_GUI()
         Fy2 = zeros(size(gammaSamplesDeg));
         for ii = 1:length(gammaSamplesDeg)
             gammaDeg = gammaSamplesDeg(ii);
+            gammaRad = deg2rad(gammaDeg);
             if h.chk1.Value
-                Fy1(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,gammaDeg,p1);
+                Fy1(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,gammaRad,p1);
             end
             if h.chk2.Value
-                Fy2(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,gammaDeg,p2);
+                Fy2(ii) = MF_PAC2002_Fy_pure(0,alpha,userFz,gammaRad,p2);
             end
         end
         axes(h.ax); hold on;
@@ -151,7 +152,7 @@ end
 % ============================================================================
 % PAC2002 pure slip Fy formulation
 % ============================================================================
-function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,gammaDeg,p)
+function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,gammaRad,p)
     Fz0 = p.FNOMIN;
     dfz = (Fz - Fz0)/Fz0;
     pi0 = getParam(p,'IP_NOM',2e5);
@@ -166,16 +167,16 @@ function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,gammaDeg,p)
     py1 = getParam(p,'PPY1',0); py2 = getParam(p,'PPY2',0); py3 = getParam(p,'PPY3',0);
     py4 = getParam(p,'PPY4',0);
 
-    mu = (Dy1 + Dy2*dfz) * (1 + py3*dpi + py4*dpi^2) * (1 - Dy3*gammaDeg^2);
+    mu = (Dy1 + Dy2*dfz) * (1 + py3*dpi + py4*dpi^2) * (1 - Dy3*gammaRad^2);
     D = mu * Fz;
     C = Cy1;
     Ky0 = Ky1 * Fz0 * (1 + py1*dpi) * sin(2*atan(Fz/(Ky2*Fz0*(1 + py2*dpi))));
-    K = Ky0 * (1 - Ky3*abs(gammaDeg));
+    K = Ky0 * (1 - Ky3*abs(gammaRad));
     B = K/(C*D + eps);
-    SH = (Hy1 + Hy2*dfz) + Hy3*gammaDeg;
+    SH = (Hy1 + Hy2*dfz) + Hy3*gammaRad;
     a = alpha + SH;
-    E = (Ey1 + Ey2*dfz) * (1 - (Ey3 + Ey4*gammaDeg)*sign(a));
-    SV = Fz * (Vy1 + Vy2*dfz + (Vy3 + Vy4*dfz)*gammaDeg);
+    E = (Ey1 + Ey2*dfz) * (1 - (Ey3 + Ey4*gammaRad)*sign(a));
+    SV = Fz * (Vy1 + Vy2*dfz + (Vy3 + Vy4*dfz)*gammaRad);
     Fy0 = D * sin(C*atan(B*a - E*(B*a - atan(B*a))));
     Fy = Fy0 + SV;
 end
