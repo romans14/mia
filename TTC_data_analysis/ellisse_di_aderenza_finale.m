@@ -75,23 +75,19 @@ for iA = 1:numA
 
         % bordo con kappa = -kMax
         Kfix = -kMax * ones(size(alpha_vec));
-        Fx1 = MF_PAC2002_Fx_pure(Kfix, 0, Fz, gamma, P, p) .* MF_PAC2002_Gx(Kfix, alpha_vec, Fz, gamma, P, p);
-        Fy1 = MF_PAC2002_Fy_pure(0, alpha_vec, Fz, gamma, P, p) .* MF_PAC2002_Gy(Kfix, alpha_vec, Fz, gamma, P, p);
+        [Fx1, Fy1] = MF_PAC2002_Fxy_combined(Kfix, alpha_vec, Fz, gamma, P, p);
 
         % bordo con alpha = aMax
         Afix = aRad * ones(size(kappa_vec));
-        Fx2 = MF_PAC2002_Fx_pure(kappa_vec, 0, Fz, gamma, P, p) .* MF_PAC2002_Gx(kappa_vec, Afix, Fz, gamma, P, p);
-        Fy2 = MF_PAC2002_Fy_pure(0, Afix, Fz, gamma, P, p) .* MF_PAC2002_Gy(kappa_vec, Afix, Fz, gamma, P, p);
+        [Fx2, Fy2] = MF_PAC2002_Fxy_combined(kappa_vec, Afix, Fz, gamma, P, p);
 
         % bordo con kappa = kMax
         Kfix = kMax * ones(size(alpha_vec));
-        Fx3 = MF_PAC2002_Fx_pure(Kfix, 0, Fz, gamma, P, p) .* MF_PAC2002_Gx(Kfix, fliplr(alpha_vec), Fz, gamma, P, p);
-        Fy3 = MF_PAC2002_Fy_pure(0, fliplr(alpha_vec), Fz, gamma, P, p) .* MF_PAC2002_Gy(Kfix, fliplr(alpha_vec), Fz, gamma, P, p);
+        [Fx3, Fy3] = MF_PAC2002_Fxy_combined(Kfix, fliplr(alpha_vec), Fz, gamma, P, p);
 
         % bordo con alpha = -aMax
         Afix = -aRad * ones(size(kappa_vec));
-        Fx4 = MF_PAC2002_Fx_pure(fliplr(kappa_vec), 0, Fz, gamma, P, p) .* MF_PAC2002_Gx(fliplr(kappa_vec), Afix, Fz, gamma, P, p);
-        Fy4 = MF_PAC2002_Fy_pure(0, Afix, Fz, gamma, P, p) .* MF_PAC2002_Gy(fliplr(kappa_vec), Afix, Fz, gamma, P, p);
+        [Fx4, Fy4] = MF_PAC2002_Fxy_combined(fliplr(kappa_vec), Afix, Fz, gamma, P, p);
 
         count = count + 1;
         label = sprintf('α_{max}=%.1f°, κ_{max}=%.2f', aMax, kMax);
@@ -133,7 +129,7 @@ function params = readTirParameters(tirFilename)
     fclose(fid);
 end
 
-function Fx = MF_PAC2002_Fx_pure(kappa,~,Fz,gamma,P,p)
+function [Fx, Fx0, D, K, SH, SV] = MF_PAC2002_Fx_pure(kappa,~,Fz,gamma,P,p)
     Fz0 = p.FNOMIN; dfz=(Fz-Fz0)/Fz0;
     pi0=getParam(p,'IP_NOM',2e5); dpi=(P-pi0)/pi0;
     Cx1=getParam(p,'PCX1',1);
@@ -158,7 +154,7 @@ function Fx = MF_PAC2002_Fx_pure(kappa,~,Fz,gamma,P,p)
     Fx = Fx0 + SV;
 end
 
-function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,gamma,P,p)
+function [Fy, Fy0, D, K, SH, SV] = MF_PAC2002_Fy_pure(~,alpha,Fz,gamma,P,p)
     Fz0=p.FNOMIN; dfz=(Fz-Fz0)/Fz0;
     pi0=getParam(p,'IP_NOM',2e5); dpi=(P-pi0)/pi0;
     Cy1=getParam(p,'PCY1',1.1);
@@ -186,6 +182,35 @@ function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,gamma,P,p)
     SV = Fz * (Vy1 + Vy2*dfz + (Vy3 + Vy4*dfz)*gamma);
     Fy0 = D .* sin(C .* atan(B .* a - E .* (B .* a - atan(B .* a))));
     Fy = Fy0 + SV;
+end
+
+function [Fx, Fy] = MF_PAC2002_Fxy_combined(kappa,alpha,Fz,gamma,P,p)
+    [Fx0, ~, Dx, Kx, SHx, SVx] = MF_PAC2002_Fx_pure(kappa, 0, Fz, gamma, P, p);
+    [Fy0, ~, Dy, Ky, SHy, SVy] = MF_PAC2002_Fy_pure(0, alpha, Fz, gamma, P, p);
+
+    kappa_c = kappa + SHx + SVx ./ (Kx + eps);
+    alpha_c = alpha + SHy + SVy ./ (Ky + eps);
+    alpha_star = sin(alpha_c);
+
+    denom = sqrt(kappa_c.^2 + alpha_star.^2 + eps);
+    beta = acos(kappa_c ./ denom);
+
+    mu_x_act = (Fx0 - SVx) ./ Fz;
+    mu_y_act = (Fy0 - SVy) ./ Fz;
+
+    mu_x_max = Dx ./ Fz;
+    mu_y_max = Dy ./ Fz;
+
+    mu_x_act_safe = mu_x_act;
+    mu_y_act_safe = mu_y_act;
+    mu_x_act_safe(abs(mu_x_act_safe) < eps) = eps;
+    mu_y_act_safe(abs(mu_y_act_safe) < eps) = eps;
+
+    mu_x = 1 ./ sqrt((1 ./ mu_x_act_safe).^2 + (tan(beta) ./ (mu_y_max + eps)).^2);
+    mu_y = tan(beta) ./ sqrt((1 ./ (mu_x_max + eps)).^2 + (tan(beta) ./ mu_y_act_safe).^2);
+
+    Fx = (mu_x ./ mu_x_act_safe) .* Fx0;
+    Fy = (mu_y ./ mu_y_act_safe) .* Fy0;
 end
 
 function Gx = MF_PAC2002_Gx(kappa,alpha,Fz,gamma,P,p)
