@@ -18,6 +18,10 @@ if isfield(p, 'FNOMIN')
     Fz0 = p.FNOMIN;
 else
     Fz0 = input('Inserisci il carico nominale FNOMIN [N]: ');
+    if isempty(Fz0) || Fz0<=0
+        error('Carico nominale non valido.');
+    end
+    p.FNOMIN = Fz0;
 end
 Fz = input('Inserisci il carico operativo Fz [N]: ');
 if isempty(Fz) || Fz<=0
@@ -31,6 +35,9 @@ if isempty(P) || P<=0
 end
 % Angolo di camber
 camDeg = input('Inserisci l''angolo di camber [deg]: ');
+if isempty(camDeg)
+    camDeg = 0;
+end
 gamma = deg2rad(camDeg);
 
 %% 4) Definizione dei range di slip massimi
@@ -116,8 +123,11 @@ function params = readTirParameters(tirFilename)
         if ~isempty(tkn)
             name = tkn{1}{1}; val = str2double(tkn{1}{2}); if ~isnan(val), params.(name) = val; end
         end
-        if contains(line, '% : COMMENT : Tire')
-            tt = regexp(line, '% : COMMENT : Tire\s+(.*)','tokens'); params.tireName = strtrim(tt{1}{1});
+        if contains(line, '$ : COMMENT : Tire')
+            tt = regexp(line, '\\$\\s*:\\s*COMMENT\\s*:\\s*Tire\\s+(.*)','tokens');
+            if ~isempty(tt)
+                params.tireName = strtrim(tt{1}{1});
+            end
         end
     end
     fclose(fid);
@@ -163,7 +173,11 @@ function Fy = MF_PAC2002_Fy_pure(~,alpha,Fz,gamma,P,p)
     mu = (Dy1 + Dy2*dfz) * (1 + py3*dpi + py4*dpi^2)*(1 - Dy3*gamma^2);
     D = mu * Fz;
     C = Cy1; 
-    Ky0 = Ky1 * Fz0*(1 + py1*dpi)*sin(2*atan(Fz/(Ky2*Fz0*(1 + py2*dpi))));
+    if Ky2 == 0
+        Ky0 = Ky1 * Fz0*(1 + py1*dpi);
+    else
+        Ky0 = Ky1 * Fz0*(1 + py1*dpi)*sin(2*atan(Fz/(Ky2*Fz0*(1 + py2*dpi))));
+    end
     K = Ky0 * (1 - Ky3 * abs(gamma));
     B = K/(C*D + eps);
     SH = (Hy1 + Hy2*dfz) + Hy3 * gamma;
