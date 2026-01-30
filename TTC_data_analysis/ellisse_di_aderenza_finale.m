@@ -192,8 +192,8 @@ function [Fx, Fy] = MF_PAC2002_Fxy_combined(kappa,alpha,Fz,gamma,P,p)
     alpha_c = alpha + SHy + SVy ./ (Ky + eps);
     alpha_star = sin(alpha_c);
 
-    denom = sqrt(kappa_c.^2 + alpha_star.^2 + eps);
-    beta = acos(kappa_c ./ denom);
+    beta = atan2(alpha_star, kappa_c);
+    tan_beta = tan(beta);
 
     mu_x_act = (Fx0 - SVx) ./ Fz;
     mu_y_act = (Fy0 - SVy) ./ Fz;
@@ -206,8 +206,8 @@ function [Fx, Fy] = MF_PAC2002_Fxy_combined(kappa,alpha,Fz,gamma,P,p)
     mu_x_act_abs(mu_x_act_abs < eps) = eps;
     mu_y_act_abs(mu_y_act_abs < eps) = eps;
 
-    mu_x = 1 ./ sqrt((1 ./ mu_x_act_abs).^2 + (tan(beta) ./ (mu_y_max + eps)).^2);
-    mu_y = tan(beta) ./ sqrt((1 ./ (mu_x_max + eps)).^2 + (tan(beta) ./ mu_y_act_abs).^2);
+    mu_x = 1 ./ sqrt((1 ./ mu_x_act_abs).^2 + (tan_beta ./ (mu_y_max + eps)).^2);
+    mu_y = tan_beta ./ sqrt((1 ./ (mu_x_max + eps)).^2 + (tan_beta ./ mu_y_act_abs).^2);
 
     Fx = (mu_x ./ mu_x_act_abs) .* Fx0;
     Fy = (mu_y ./ mu_y_act_abs) .* Fy0;
