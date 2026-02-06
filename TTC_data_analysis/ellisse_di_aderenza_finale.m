@@ -192,9 +192,8 @@ function [Fx, Fy] = MF_PAC2002_Fxy_combined(kappa,alpha,Fz,gamma,P,p)
     alpha_c = alpha + SHy + SVy ./ (Ky + eps);
     alpha_star = sin(alpha_c);
 
-    beta = atan2(alpha_star, kappa_c);
+    beta = acos(kappa_c ./ sqrt(kappa_c.^2 + alpha_star.^2 + eps));
     tan_beta = tan(beta);
-    tan_beta_abs = abs(tan_beta);
 
     mu_x_act = (Fx0 - SVx) ./ Fz;
     mu_y_act = (Fy0 - SVy) ./ Fz;
@@ -202,16 +201,20 @@ function [Fx, Fy] = MF_PAC2002_Fxy_combined(kappa,alpha,Fz,gamma,P,p)
     mu_x_max = Dx ./ Fz;
     mu_y_max = Dy ./ Fz;
 
-    mu_x_act_abs = abs(mu_x_act);
-    mu_y_act_abs = abs(mu_y_act);
-    mu_x_act_abs(mu_x_act_abs < eps) = eps;
-    mu_y_act_abs(mu_y_act_abs < eps) = eps;
+    mu_x_act_safe = mu_x_act;
+    mu_y_act_safe = mu_y_act;
+    mu_x_max_safe = mu_x_max;
+    mu_y_max_safe = mu_y_max;
+    mu_x_act_safe(abs(mu_x_act_safe) < eps) = eps * sign(mu_x_act_safe(abs(mu_x_act_safe) < eps) + eps);
+    mu_y_act_safe(abs(mu_y_act_safe) < eps) = eps * sign(mu_y_act_safe(abs(mu_y_act_safe) < eps) + eps);
+    mu_x_max_safe(abs(mu_x_max_safe) < eps) = eps;
+    mu_y_max_safe(abs(mu_y_max_safe) < eps) = eps;
 
-    mu_x = 1 ./ sqrt((1 ./ mu_x_act_abs).^2 + (tan_beta_abs ./ (mu_y_max + eps)).^2);
-    mu_y = tan_beta_abs ./ sqrt((1 ./ (mu_x_max + eps)).^2 + (tan_beta_abs ./ mu_y_act_abs).^2);
+    mu_x = 1 ./ sqrt((1 ./ mu_x_act_safe).^2 + (tan_beta ./ mu_y_max_safe).^2);
+    mu_y = tan_beta ./ sqrt((1 ./ mu_x_max_safe).^2 + (tan_beta ./ mu_y_act_safe).^2);
 
-    Fx = (mu_x ./ mu_x_act_abs) .* Fx0;
-    Fy = (mu_y ./ mu_y_act_abs) .* Fy0;
+    Fx = (mu_x ./ mu_x_act_safe) .* Fx0;
+    Fy = (mu_y ./ mu_y_act_safe) .* Fy0;
 end
 
 function Gx = MF_PAC2002_Gx(kappa,alpha,Fz,gamma,P,p)
